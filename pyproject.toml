@@ -1,0 +1,18 @@
+[project]
+name = "snake"
+version = "0.1.0"
+description = "A remake of my first ever programming project"
+authors = [
+    {name = "imsasankvindamuri",email = "imsasankvindamuri@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+]
+
+[project.scripts]
+snake = "snake.main:main"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
