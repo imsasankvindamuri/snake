@@ -13,6 +13,12 @@ from collections.abc import Generator
 from typing import override, Any
 from types import NotImplementedType, TracebackType
 
+# ANSI escape codes for colors
+RESET = "\033[0m"
+GREEN = "\033[32m"
+RED = "\033[31m"
+BLUE = "\033[34m"
+
 class KeyListener:
     def __init__(self) -> None:
         self.fd: int
@@ -115,15 +121,20 @@ def new_apple_location(x_bounds: int, y_bounds: int, snake: Snake) -> Point2D:
         sys.exit(0)
     return random.choice(free)
 
-
-def plot(x_bounds: int, y_bounds: int, snake: Snake, apple : Point2D) -> list[list[str]]:
+def plot(x_bounds: int, y_bounds: int, snake: Snake, apple: Point2D) -> list[str]:
     _ = os.system("clear")
-    board = [["." for _ in range(x_bounds)] for _ in range(y_bounds)]
-    board[apple.y][apple.x] = "A"
+    board = [[" " for _ in range(x_bounds)] for _ in range(y_bounds)]
+    board[apple.y][apple.x] = f"{RED}A{RESET}"
     for point in snake.coords:
         if 0 <= point.x < x_bounds and 0 <= point.y < y_bounds:
-            board[point.y][point.x] = "S"
-    return board
+            board[point.y][point.x] = f"{GREEN}S{RESET}"
+
+    horizontal_border = f"{BLUE}+{'-' * x_bounds*2}+{RESET}"
+    rendered_board = [horizontal_border]
+    for row in board:
+        rendered_board.append(f"{BLUE}|{RESET}" + " ".join(row) + f" {BLUE}|{RESET}")
+    rendered_board.append(horizontal_border)
+    return rendered_board
 
 def main() -> None:
     X_BOUNDS = 30
@@ -133,21 +144,20 @@ def main() -> None:
     is_running = True
     with KeyListener() as listener:
         while is_running:
-            print("\n".join(" ".join(row) for row in plot(X_BOUNDS, Y_BOUNDS, snake, apple)))
+            print("\n".join(plot(X_BOUNDS, Y_BOUNDS, snake, apple)))
             if snake.is_dead():
                 break
             if snake.coords[0] == apple:
+                print("\a")
                 snake.grow()
                 apple = new_apple_location(X_BOUNDS, Y_BOUNDS, snake)
             key = listener.get_key()
             if key:
                 is_running = snake.move(key)
-                if key == "g":
-                    snake.grow()
             snake.update(X_BOUNDS, Y_BOUNDS)
             time.sleep(0.5)
 
-    print(f"SCORE: {len(snake.coords) - 1}")
+    print(f"{RED}GAME OVER{RESET} — SCORE: {len(snake.coords) - 1}")
 
 if __name__ == "__main__":
     main()
