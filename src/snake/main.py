@@ -18,7 +18,7 @@ RESET = "\033[0m"
 GREEN = "\033[32m"
 RED = "\033[31m"
 BLUE = "\033[34m"
-
+        
 class KeyListener:
     def __init__(self) -> None:
         self.fd: int
@@ -68,6 +68,9 @@ class Point2D:
     def __hash__(self) -> int:
         return hash((self.x, self.y))
 
+    def __neg__(self) -> 'Point2D':
+        return Point2D(-self.x, -self.y)
+
     def squash(self, x_bounds: int, y_bounds: int) -> 'Point2D':
         return Point2D((self.x % x_bounds), (self.y % y_bounds))
 
@@ -81,24 +84,24 @@ class Snake:
     def __init__(self, x_coord: int, y_coord: int, direction: Direction) -> None:
         self.coords: list[Point2D] = [Point2D(x_coord, y_coord)]
         self.direction: Direction = direction
+        self.char_to_direction: dict[str, Direction] = {
+            'w' : Direction.UP,
+            'a' : Direction.LEFT,
+            's' : Direction.DOWN,
+            'd' : Direction.RIGHT
+        }
+
 
     def show(self) -> list[Point2D]:
         return self.coords
 
     def move(self, key: str) -> bool:
-        match key.strip().lower():
-            case 'w':
-                self.direction = Direction.UP
-            case 'a':
-                self.direction = Direction.LEFT
-            case 's':
-                self.direction = Direction.DOWN
-            case 'd':
-                self.direction = Direction.RIGHT
-            case 'q':
-                return False
-            case _:
-                pass
+        character = key.strip().lower()
+        if character in self.char_to_direction:
+            if self.direction.value != -self.char_to_direction[character].value:
+                self.direction = self.char_to_direction[character]
+        if character == 'q':
+            return False
         return True
 
     def grow(self) -> None:
@@ -142,22 +145,25 @@ def main() -> None:
     snake = Snake(X_BOUNDS // 2, Y_BOUNDS // 2, Direction.DOWN)
     apple = new_apple_location(X_BOUNDS, Y_BOUNDS, snake)
     is_running = True
+    delay = 0.5
+    score = 0
     with KeyListener() as listener:
         while is_running:
             print("\n".join(plot(X_BOUNDS, Y_BOUNDS, snake, apple)))
             if snake.is_dead():
                 break
             if snake.coords[0] == apple:
-                print("\a")
+                score += 1
+                print("\a", end="", flush=True)
                 snake.grow()
                 apple = new_apple_location(X_BOUNDS, Y_BOUNDS, snake)
             key = listener.get_key()
             if key:
                 is_running = snake.move(key)
             snake.update(X_BOUNDS, Y_BOUNDS)
-            time.sleep(0.5)
+            time.sleep(delay)
 
-    print(f"{RED}GAME OVER{RESET} — SCORE: {len(snake.coords) - 1}")
+    print(f"{RED}GAME OVER{RESET} — SCORE: {score}")
 
 if __name__ == "__main__":
     main()
