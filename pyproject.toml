@@ -10,7 +10,7 @@ requires-python = ">=3.13"
 dependencies = [
 ]
 
-[project.scripts]
+[tool.poetry.scripts]
 snake = "snake.main:main"
 
 [build-system]
